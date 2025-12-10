@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doubler - Inicio de Sesión y Registro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-text {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .logo-subtitle {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input.error {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .form-input.error ~ .error-message {
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.875rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            color: #64748b;
+        }
+
+        .toggle-form a {
+            color: #667eea;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-form a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            gap: 1rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: #e2e8f0;
+        }
+
+        .divider-text {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .success-message {
+            background-color: #dcfce7;
+            border: 2px solid #86efac;
+            color: #15803d;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message.show {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .success-message i {
+            font-size: 1.25rem;
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 1rem;
+            top: 2.75rem;
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .password-toggle-btn:hover {
+            color: #764ba2;
+        }
+
+        .referral-hint {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .form-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-description {
+            font-size: 0.95rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <!-- Logo -->
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="logo-text">Doubler</div>
+                <div class="logo-subtitle">Plataforma de Inversión</div>
+            </div>
+
+            <!-- Success Message -->
+            <div class="success-message" id="successMessage">
+                <i class="fas fa-check-circle"></i>
+                <span id="successText"></span>
+            </div>
+
+            <!-- REGISTRO FORM -->
+            <div class="form-section active" id="registerForm">
+                <div class="form-header">
+                    <div class="form-title">Crear Cuenta</div>
+                    <div class="form-description">Únete a nuestra comunidad de inversores</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nombre Completo</label>
+                    <input type="text" id="registerName" class="form-input" placeholder="Tu nombre completo" required>
+                    <div class="error-message" id="nameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" id="registerEmail" class="form-input" placeholder="tu@gmail.com" required>
+                    <div class="error-message" id="registerEmailError"></div>
+                    <div class="referral-hint">Debe terminar en @gmail.com</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Contraseña</label>
+                    <div class="password-toggle">
+                        <input type="password" id="registerPassword" class="form-input" placeholder="Mínimo 6 caracteres" required>
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('registerPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="error-message" id="registerPasswordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Código de Referido (Opcional)</label>
+                    <input type="text" id="referralCode" class="form-input" placeholder="XXXXX (opcional)">
+                    <div class="referral-hint">Si tienes un código de referido, ingrésalo aquí</div>
+                </div>
+
+                <button class="btn btn-primary" onclick="handleRegister()">
+                    <i class="fas fa-user-plus"></i> Registrarse
+                </button>
+
+                <div class="toggle-form">
+                    ¿Ya tienes una cuenta? <a onclick="switchToLogin()">Inicia Sesión</a>
+                </div>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div class="form-section" id="loginForm">
+                <div class="form-header">
+                    <div class="form-title">Iniciar Sesión</div>
+                    <div class="form-description">Bienvenido de vuelta</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" id="loginEmail" class="form-input" placeholder="tu@gmail.com" required>
+                    <div class="error-message" id="loginEmailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Contraseña</label>
+                    <div class="password-toggle">
+                        <input type="password" id="loginPassword" class="form-input" placeholder="Tu contraseña" required>
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('loginPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="error-message" id="loginPasswordError"></div>
+                </div>
+
+                <button class="btn btn-primary" onclick="handleLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+
+                <div class="toggle-form">
+                    ¿No tienes una cuenta? <a onclick="switchToRegister()">Regístrate</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Almacenar usuarios en localStorage
+        function loadUsers() {
+            const stored = localStorage.getItem('doubler_users');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('doubler_users', JSON.stringify(users));
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.textContent = '';
+                el.classList.remove('show');
+            });
+            document.querySelectorAll('.form-input').forEach(el => {
+                el.classList.remove('error');
+            });
+        }
+
+        function showError(inputId, errorId, message) {
+            const input = document.getElementById(inputId);
+            const error = document.getElementById(errorId);
+            input.classList.add('error');
+            error.textContent = message;
+            error.classList.add('show');
+        }
+
+        function showSuccess(message) {
+            const successMsg = document.getElementById('successMessage');
+            const successText = document.getElementById('successText');
+            successText.textContent = message;
+            successMsg.classList.add('show');
+            setTimeout(() => {
+                successMsg.classList.remove('show');
+            }, 3000);
+        }
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const btn = event.target.closest('.password-toggle-btn');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                input.type = 'password';
+                btn.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        }
+
+        function switchToLogin() {
+            clearErrors();
+            document.getElementById('registerForm').classList.remove('active');
+            document.getElementById('loginForm').classList.add('active');
+            // Limpiar campos
+            document.getElementById('registerName').value = '';
+            document.getElementById('registerEmail').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('referralCode').value = '';
+        }
+
+        function switchToRegister() {
+            clearErrors();
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('registerForm').classList.add('active');
+            // Limpiar campos
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+
+        function handleRegister() {
+            clearErrors();
+
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const referralCode = document.getElementById('referralCode').value.trim();
+
+            let hasError = false;
+
+            // Validar nombre
+            if (!name) {
+                showError('registerName', 'nameError', 'El nombre es requerido');
+                hasError = true;
+            }
+
+            // Validar email
+            if (!email) {
+                showError('registerEmail', 'registerEmailError', 'El correo es requerido');
+                hasError = true;
+            } else if (!email.endsWith('@gmail.com')) {
+                showError('registerEmail', 'registerEmailError', 'El correo debe terminar en @gmail.com');
+                hasError = true;
+            }
+
+            // Validar contraseña
+            if (!password) {
+                showError('registerPassword', 'registerPasswordError', 'La contraseña es requerida');
+                hasError = true;
+            } else if (password.length < 6) {
+                showError('registerPassword', 'registerPasswordError', 'La contraseña debe tener mínimo 6 caracteres');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            // Verificar si el email ya existe
+            const users = loadUsers();
+            if (users.some(u => u.email === email)) {
+                showError('registerEmail', 'registerEmailError', 'Este correo ya está registrado');
+                return;
+            }
+
+            // Generar código de referido único
+            const generatedReferralCode = generateReferralCode();
+
+            // Guardar usuario
+            const newUser = {
+                id: Date.now(),
+                name: name,
+                email: email,
+                password: password, // En producción, esto debe estar hasheado
+                referralCode: generatedReferralCode,
+                referredBy: referralCode || null,
+                createdAt: new Date().toISOString(),
+                balance: 0,
+                investments: [],
+                referrals: []
+            };
+
+            users.push(newUser);
+            saveUsers(users);
+
+            // Guardar sesión
+            localStorage.setItem('doubler_currentUser', JSON.stringify(newUser));
+
+            showSuccess(`¡Bienvenido ${name}! Tu código de referido es: ${generatedReferralCode}`);
+
+            setTimeout(() => {
+                window.location.href = 'COMPLETE_DASHBOARD_V2.html';
+            }, 2000);
+        }
+
+        function handleLogin() {
+            clearErrors();
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            let hasError = false;
+
+            // Validar email
+            if (!email) {
+                showError('loginEmail', 'loginEmailError', 'El correo es requerido');
+                hasError = true;
+            } else if (!email.endsWith('@gmail.com')) {
+                showError('loginEmail', 'loginEmailError', 'El correo debe terminar en @gmail.com');
+                hasError = true;
+            }
+
+            // Validar contraseña
+            if (!password) {
+                showError('loginPassword', 'loginPasswordError', 'La contraseña es requerida');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            // Buscar usuario
+            const users = loadUsers();
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (!user) {
+                showError('loginEmail', 'loginEmailError', 'Correo o contraseña incorrectos');
+                return;
+            }
+
+            // Guardar sesión
+            localStorage.setItem('doubler_currentUser', JSON.stringify(user));
+
+            showSuccess(`¡Bienvenido ${user.name}!`);
+
+            setTimeout(() => {
+                window.location.href = 'COMPLETE_DASHBOARD_V2.html';
+            }, 2000);
+        }
+
+        function generateReferralCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        // Permitir Enter para enviar formulario
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                const registerForm = document.getElementById('registerForm');
+                const loginForm = document.getElementById('loginForm');
+                
+                if (registerForm.classList.contains('active')) {
+                    handleRegister();
+                } else if (loginForm.classList.contains('active')) {
+                    handleLogin();
+                }
+            }
+        });
+
+        // Cargar usuario si ya existe sesión
+        window.addEventListener('load', function() {
+            const currentUser = localStorage.getItem('doubler_currentUser');
+            if (currentUser) {
+                window.location.href = 'COMPLETE_DASHBOARD_V2.html';
+            }
+        });
+    </script>
+</body>
+</html>
