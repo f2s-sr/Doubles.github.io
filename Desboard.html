@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doubler - Plataforma de Inversión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; background: linear-gradient(to bottom right, #f8fafc, #f1f5f9); }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 0.75rem; padding: 2rem; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .modal-header { margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; }
+        .modal-title { font-size: 1.25rem; font-weight: 600; color: #1e293b; }
+        .modal-description { font-size: 0.875rem; color: #64748b; margin-top: 0.25rem; }
+        .input-group { margin-bottom: 1rem; }
+        .input-label { display: block; font-weight: 500; margin-bottom: 0.5rem; color: #1e293b; }
+        .input-field { width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; font-size: 1rem; font-family: inherit; }
+        .input-field:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .input-hint { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; }
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+        .btn { padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 500; border: none; cursor: pointer; transition: all 0.3s ease; font-size: 1rem; }
+        .btn-primary { background-color: #2563eb; color: white; }
+        .btn-primary:hover { background-color: #1d4ed8; }
+        .btn-primary:disabled { background-color: #cbd5e1; cursor: not-allowed; }
+        .btn-secondary { background-color: white; color: #1e293b; border: 1px solid #e2e8f0; }
+        .btn-secondary:hover { background-color: #f8fafc; }
+        .wallet-box { background-color: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.75rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .wallet-address { font-family: 'Monaco', 'Menlo', monospace; font-size: 0.75rem; color: #1e293b; flex: 1; word-break: break-all; }
+        .copy-btn { background-color: transparent; color: #2563eb; padding: 0.5rem; border-radius: 0.375rem; cursor: pointer; border: none; font-size: 1rem; }
+        .copy-btn:hover { background-color: #dbeafe; }
+        .alert { padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex; gap: 0.5rem; }
+        .alert-warning { background-color: #fef3c7; border: 1px solid #fcd34d; color: #92400e; }
+        .success-icon { text-align: center; margin-bottom: 1rem; }
+        .success-icon i { font-size: 3rem; color: #16a34a; }
+        .amount-display { background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; }
+        .amount-label { font-size: 0.875rem; color: #1e40af; margin-bottom: 0.25rem; }
+        .amount-value { font-size: 1.875rem; font-weight: 700; color: #0284c7; }
+        .card { background: white; border-radius: 0.75rem; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+        .card-header { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0; }
+        .card-title { font-size: 1.25rem; font-weight: 600; color: #1e293b; }
+        .card-description { font-size: 0.875rem; color: #64748b; margin-top: 0.25rem; }
+        .stat-card { background: linear-gradient(135deg, var(--from-color), var(--to-color)); border: 1px solid var(--border-color); }
+        .stat-card.blue { --from-color: #eff6ff; --to-color: #dbeafe; --border-color: #bfdbfe; }
+        .stat-card.purple { --from-color: #faf5ff; --to-color: #f3e8ff; --border-color: #e9d5ff; }
+        .stat-card.green { --from-color: #f0fdf4; --to-color: #dcfce7; --border-color: #bbf7d0; }
+        .stat-value { font-size: 1.875rem; font-weight: 700; margin-top: 0.5rem; }
+        .stat-card.blue .stat-value { color: #0284c7; }
+        .stat-card.purple .stat-value { color: #a855f7; }
+        .stat-card.green .stat-value { color: #16a34a; }
+        .investment-item { border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; }
+        .investment-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+        .investment-title { font-weight: 600; color: #1e293b; }
+        .investment-status { font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 500; }
+        .investment-status.active { background-color: #dbeafe; color: #0284c7; }
+        .investment-status.completed { background-color: #dcfce7; color: #16a34a; }
+        .investment-details { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem; }
+        .investment-detail-label { font-size: 0.75rem; color: #64748b; margin-bottom: 0.25rem; }
+        .investment-detail-value { font-weight: 600; color: #1e293b; font-size: 1.125rem; }
+        .progress-bar { width: 100%; height: 0.5rem; background-color: #e2e8f0; border-radius: 0.25rem; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.3s ease; }
+        .referral-box { background-color: #faf5ff; border: 2px solid #e9d5ff; border-radius: 0.5rem; padding: 0.75rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .referral-link { font-family: 'Monaco', 'Menlo', monospace; font-size: 0.875rem; color: #6b21a8; flex: 1; word-break: break-all; }
+        .commission-card { background: linear-gradient(135deg, #fef3c7, #fed7aa); border: 1px solid #fcd34d; }
+        .commission-value { font-size: 2.25rem; font-weight: 700; color: #b45309; margin-top: 0.5rem; }
+        .referral-item { border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; }
+        .referral-item-name { font-weight: 500; color: #1e293b; }
+        .referral-item-date { font-size: 0.875rem; color: #64748b; margin-top: 0.25rem; }
+        .referral-item-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e2e8f0; }
+        .stat-label { font-size: 0.75rem; color: #64748b; margin-bottom: 0.25rem; }
+        .stat-amount { font-size: 1.125rem; font-weight: 600; }
+        .stat-amount.invested { color: #0284c7; }
+        .stat-amount.commission { color: #16a34a; }
+        @media (max-width: 768px) { .grid-3 { grid-template-columns: 1fr; } .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="max-w-6xl mx-auto p-4 md:p-8">
+        <div class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                Bienvenido, <span id="userName">Usuario</span>
+            </h1>
+            <p class="text-gray-600">
+                Tu código de referido: <span class="font-mono font-semibold text-blue-600" id="referralCode">XXXXX</span>
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 grid-3">
+            <div class="card stat-card blue">
+                <div class="card-header">
+                    <div class="card-title" style="color: #1e40af;">Saldo Actual</div>
+                </div>
+                <p class="stat-value" id="currentBalance">$0.00 USDT</p>
+            </div>
+
+            <div class="card stat-card purple">
+                <div class="card-header">
+                    <div class="card-title" style="color: #6b21a8;">Mis Referidos</div>
+                </div>
+                <p class="stat-value" id="referralCount" style="color: #a855f7;">0</p>
+            </div>
+
+            <div class="card stat-card green">
+                <div class="card-header">
+                    <div class="card-title" style="color: #15803d;">Inversiones Activas</div>
+                </div>
+                <p class="stat-value" id="activeInvestments" style="color: #16a34a;">0</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 grid-2">
+            <button class="btn btn-primary" onclick="openDepositModal()" style="width: 100%; padding: 1rem;">
+                <i class="fas fa-dollar-sign"></i> Nuevo Depósito
+            </button>
+            <button class="btn btn-secondary" onclick="openWithdrawalModal()" style="width: 100%; padding: 1rem;">
+                <i class="fas fa-arrow-up-right"></i> Solicitar Retiro
+            </button>
+        </div>
+
+        <div class="card mb-8">
+            <div class="card-header">
+                <div class="card-title">Saldo Total</div>
+                <div class="card-description">Valor actual de tus inversiones</div>
+            </div>
+            <p class="text-4xl font-bold text-blue-600" id="totalBalance">$0.00 USDT</p>
+        </div>
+
+        <div id="investmentProgressSection" class="mb-8" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Mis Inversiones</div>
+                    <div class="card-description">Estado de tus inversiones activas (24 horas desde el depósito)</div>
+                </div>
+                <div id="investmentsList"></div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="card" style="border: 2px solid #e9d5ff;">
+                <div class="card-header">
+                    <div class="card-title" style="color: #6b21a8;">Tu Enlace de Referido</div>
+                    <div class="card-description">
+                        Comparte este enlace para invitar a otros y ganar el 10% de sus ganancias
+                    </div>
+                </div>
+                <div class="referral-box">
+                    <code class="referral-link" id="referralLink">https://doublerapp.example.com?ref=XXXXX</code>
+                    <button class="copy-btn" onclick="copyReferralLink()">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card commission-card">
+                <div class="card-header">
+                    <div class="card-title" style="color: #92400e;">Tus Comisiones</div>
+                    <div class="card-description" style="color: #b45309;">
+                        Ganas el 10% de lo que invierten tus referidos
+                    </div>
+                </div>
+                <p class="commission-value" id="totalCommissions">$0.00 USDT</p>
+            </div>
+
+            <div id="referralsListSection" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Mis Referidos (<span id="referralsCount">0</span>)</div>
+                        <div class="card-description">
+                            Detalles de tus referidos y sus inversiones
+                        </div>
+                    </div>
+                    <div id="referralsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="depositModal" class="modal">
+        <div class="modal-content">
+            <div id="depositStep1" class="deposit-step">
+                <div class="modal-header">
+                    <div class="modal-title">Nuevo Depósito</div>
+                    <div class="modal-description">Ingresa el monto a invertir (mínimo 2 USDT)</div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Monto (USDT)</label>
+                    <input type="number" id="depositAmount" class="input-field" placeholder="2.00" min="2" step="0.01">
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="closeDepositModal()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="depositStep2()">Continuar</button>
+                </div>
+            </div>
+
+            <div id="depositStep2" class="deposit-step" style="display: none;">
+                <div class="modal-header">
+                    <div class="modal-title">Confirmar Depósito</div>
+                    <div class="modal-description">Envía USDT a una de las direcciones de abajo</div>
+                </div>
+                <div class="amount-display">
+                    <div class="amount-label">Monto a depositar</div>
+                    <div class="amount-value" id="depositAmountDisplay">$0.00 USDT</div>
+                </div>
+                <div>
+                    <div class="input-label">USDT TRC20 (TRON)</div>
+                    <div class="wallet-box">
+                        <code class="wallet-address">TJNWs4vopJgaam7qA2sjGYicvpaQrCK9fo</code>
+                        <button class="copy-btn" onclick="copyWallet('TJNWs4vopJgaam7qA2sjGYicvpaQrCK9fo')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <div class="input-label">USDT BEP20 (BSC)</div>
+                    <div class="wallet-box">
+                        <code class="wallet-address">0x5C297BE994afAdC2f78bF43A23583b71e4348631</code>
+                        <button class="copy-btn" onclick="copyWallet('0x5C297BE994afAdC2f78bF43A23583b71e4348631')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Después de enviar, haz clic en "Confirmar Depósito" para acreditar tu inversión.</span>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="depositStep1Back()">Atrás</button>
+                    <button class="btn btn-primary" onclick="depositStep3()">Confirmar Depósito</button>
+                </div>
+            </div>
+
+            <div id="depositStep3" class="deposit-step" style="display: none;">
+                <div class="modal-header">
+                    <div class="modal-title">¡Depósito Acreditado!</div>
+                </div>
+                <div style="text-align: center;">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <p style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">
+                        <span id="depositSuccessAmount">$0.00</span> USDT
+                    </p>
+                    <p style="font-size: 0.875rem; color: #64748b; margin-bottom: 1rem;">
+                        Tu inversión se ha acreditado exitosamente
+                    </p>
+                    <p style="font-size: 0.875rem; color: #64748b;">
+                        Tu saldo se duplicará en 24 horas desde ahora
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="withdrawalModal" class="modal">
+        <div class="modal-content">
+            <div id="withdrawalStep1" class="withdrawal-step">
+                <div class="modal-header">
+                    <div class="modal-title">Solicitar Retiro</div>
+                    <div class="modal-description">Retira tus ganancias a tu billetera BEP20</div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Monto a Retirar (USDT)</label>
+                    <input type="number" id="withdrawalAmount" class="input-field" placeholder="0.00" min="0.01" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Dirección BEP20</label>
+                    <input type="text" id="withdrawalAddress" class="input-field" placeholder="0x..." style="font-family: monospace; font-size: 0.875rem;">
+                    <div class="input-hint">Debe ser una dirección BEP20 válida (comienza con 0x)</div>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="closeWithdrawalModal()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="withdrawalStep2()">Continuar</button>
+                </div>
+            </div>
+
+            <div id="withdrawalStep2" class="withdrawal-step" style="display: none;">
+                <div class="modal-header">
+                    <div class="modal-title">Confirmar Retiro</div>
+                    <div class="modal-description">Verifica los detalles de tu retiro</div>
+                </div>
+                <div class="amount-display">
+                    <div class="amount-label">Monto a retirar</div>
+                    <div class="amount-value" id="withdrawalAmountDisplay">$0.00 USDT</div>
+                    <div style="border-top: 1px solid #bfdbfe; margin-top: 0.75rem; padding-top: 0.75rem;">
+                        <div class="amount-label">Dirección BEP20</div>
+                        <div style="font-size: 0.75rem; font-family: monospace; word-break: break-all; color: #1e40af;" id="withdrawalAddressDisplay"></div>
+                    </div>
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>El retiro será procesado en las próximas 24 horas</span>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="withdrawalStep1Back()">Atrás</button>
+                    <button class="btn btn-primary" onclick="withdrawalStep3()">Confirmar Retiro</button>
+                </div>
+            </div>
+
+            <div id="withdrawalStep3" class="withdrawal-step" style="display: none;">
+                <div class="modal-header">
+                    <div class="modal-title">¡Retiro Solicitado!</div>
+                </div>
+                <div style="text-align: center;">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <p style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">
+                        <span id="withdrawalSuccessAmount">$0.00</span> USDT
+                    </p>
+                    <p style="font-size: 0.875rem; color: #64748b; margin-bottom: 1rem;">
+                        Tu retiro ha sido solicitado exitosamente
+                    </p>
+                    <p style="font-size: 0.875rem; color: #64748b;">
+                        Será procesado en las próximas 24 horas
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cargar datos de localStorage o usar valores por defecto
+        function loadUserData() {
+            const stored = localStorage.getItem('doubler_userData');
+            if (stored) {
+                return JSON.parse(stored);
+            }
+            return {
+                name: "Usuario",
+                email: "usuario@example.com",
+                referralCode: "XXXXX",
+                referralLink: "https://doublerapp.example.com?ref=XXXXX",
+                currentBalance: 0,
+                totalBalance: 0,
+                activeInvestments: 0,
+                referralCount: 0,
+                totalCommissions: 0.00,
+                investments: [],
+                referrals: []
+            };
+        }
+
+        function saveUserData() {
+            localStorage.setItem('doubler_userData', JSON.stringify(userData));
+        }
+
+        let userData = loadUserData();
+
+        window.addEventListener('load', initDashboard);
+
+        function initDashboard() {
+            document.getElementById('userName').textContent = userData.name;
+            document.getElementById('referralCode').textContent = userData.referralCode;
+            document.getElementById('currentBalance').textContent = `$${userData.currentBalance.toFixed(2)} USDT`;
+            document.getElementById('totalBalance').textContent = `$${userData.totalBalance.toFixed(2)} USDT`;
+            document.getElementById('referralCount').textContent = userData.referralCount;
+            document.getElementById('activeInvestments').textContent = userData.activeInvestments;
+            document.getElementById('referralLink').textContent = userData.referralLink;
+            document.getElementById('totalCommissions').textContent = `$${userData.totalCommissions.toFixed(2)} USDT`;
+
+            if (userData.investments.length > 0) {
+                document.getElementById('investmentProgressSection').style.display = 'block';
+                renderInvestments();
+                updateInvestmentProgress();
+            }
+
+            if (userData.referrals.length > 0) {
+                document.getElementById('referralsListSection').style.display = 'block';
+                renderReferrals();
+            }
+        }
+
+        function renderInvestments() {
+            const list = document.getElementById('investmentsList');
+            list.innerHTML = userData.investments.map(inv => {
+                const now = Date.now();
+                const depositTime = new Date(inv.depositedAt).getTime();
+                const totalTime = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+                const elapsed = now - depositTime;
+                const progress = Math.min(100, Math.round((elapsed / totalTime) * 100));
+                const isCompleted = elapsed >= totalTime;
+                
+                return `
+                    <div class="investment-item">
+                        <div class="investment-header">
+                            <div class="investment-title">Inversión #${inv.id}</div>
+                            <span class="investment-status ${isCompleted ? 'completed' : 'active'}">
+                                ${isCompleted ? 'Terminado' : 'En curso'}
+                            </span>
+                        </div>
+                        <div class="investment-details">
+                            <div>
+                                <div class="investment-detail-label">Monto Inicial</div>
+                                <div class="investment-detail-value">$${inv.initial.toFixed(2)}</div>
+                            </div>
+                            <div>
+                                <div class="investment-detail-label">Monto Actual</div>
+                                <div class="investment-detail-value">$${(inv.initial + (inv.initial * (progress / 100))).toFixed(2)}</div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                                <span style="color: #64748b;">Progreso</span>
+                                <span style="color: #0284c7; font-weight: 600;">${progress}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: #64748b;">
+                            Completará el: ${new Date(depositTime + totalTime).toLocaleString('es-ES')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateInvestmentProgress() {
+            setInterval(() => {
+                renderInvestments();
+                updateTotalBalance();
+            }, 1000); // Actualizar cada segundo para precisión
+        }
+
+        function updateTotalBalance() {
+            let total = 0;
+            userData.investments.forEach(inv => {
+                const now = Date.now();
+                const depositTime = new Date(inv.depositedAt).getTime();
+                const totalTime = 24 * 60 * 60 * 1000;
+                const elapsed = now - depositTime;
+                const progress = Math.min(100, (elapsed / totalTime));
+                const currentValue = inv.initial + (inv.initial * progress);
+                total += currentValue;
+            });
+            document.getElementById('totalBalance').textContent = `$${total.toFixed(2)} USDT`;
+            document.getElementById('currentBalance').textContent = `$${total.toFixed(2)} USDT`;
+        }
+
+        function renderReferrals() {
+            const list = document.getElementById('referralsList');
+            document.getElementById('referralsCount').textContent = userData.referrals.length;
+            list.innerHTML = userData.referrals.map(ref => `
+                <div class="referral-item">
+                    <div>
+                        <div class="referral-item-name">${ref.email}</div>
+                        <div class="referral-item-date">Se registró el ${new Date(ref.createdAt).toLocaleDateString('es-ES')}</div>
+                    </div>
+                    <div class="referral-item-stats">
+                        <div>
+                            <div class="stat-label">Inversión Total</div>
+                            <div class="stat-amount invested">$${ref.totalInvested.toFixed(2)}</div>
+                        </div>
+                        <div>
+                            <div class="stat-label">Tu Comisión (10%)</div>
+                            <div class="stat-amount commission">$${ref.commission.toFixed(2)}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openDepositModal() {
+            document.getElementById('depositModal').classList.add('active');
+            document.getElementById('depositStep1').style.display = 'block';
+            document.getElementById('depositStep2').style.display = 'none';
+            document.getElementById('depositStep3').style.display = 'none';
+            document.getElementById('depositAmount').value = '';
+        }
+
+        function closeDepositModal() {
+            document.getElementById('depositModal').classList.remove('active');
+        }
+
+        function depositStep2() {
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            if (!amount || isNaN(amount) || amount < 2) {
+                alert('El monto mínimo es 2 USDT');
+                return;
+            }
+            document.getElementById('depositAmountDisplay').textContent = `$${amount.toFixed(2)} USDT`;
+            document.getElementById('depositStep1').style.display = 'none';
+            document.getElementById('depositStep2').style.display = 'block';
+        }
+
+        function depositStep1Back() {
+            document.getElementById('depositStep1').style.display = 'block';
+            document.getElementById('depositStep2').style.display = 'none';
+        }
+
+        function depositStep3() {
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            document.getElementById('depositSuccessAmount').textContent = `$${amount.toFixed(2)}`;
+            
+            // Crear nueva inversión con timestamp exacto
+            const newInvestment = {
+                id: userData.investments.length + 1,
+                initial: amount,
+                depositedAt: new Date().toISOString() // Guardar hora exacta del depósito
+            };
+            userData.investments.push(newInvestment);
+            userData.currentBalance += amount;
+            userData.totalBalance += amount;
+            userData.activeInvestments++;
+            
+            saveUserData();
+            
+            document.getElementById('depositStep2').style.display = 'none';
+            document.getElementById('depositStep3').style.display = 'block';
+            
+            setTimeout(() => {
+                closeDepositModal();
+                initDashboard();
+            }, 2000);
+        }
+
+        function openWithdrawalModal() {
+            document.getElementById('withdrawalModal').classList.add('active');
+            document.getElementById('withdrawalStep1').style.display = 'block';
+            document.getElementById('withdrawalStep2').style.display = 'none';
+            document.getElementById('withdrawalStep3').style.display = 'none';
+            document.getElementById('withdrawalAmount').value = '';
+            document.getElementById('withdrawalAddress').value = '';
+        }
+
+        function closeWithdrawalModal() {
+            document.getElementById('withdrawalModal').classList.remove('active');
+        }
+
+        function withdrawalStep2() {
+            const amount = parseFloat(document.getElementById('withdrawalAmount').value);
+            const address = document.getElementById('withdrawalAddress').value;
+            
+            if (!amount || isNaN(amount) || amount <= 0) {
+                alert('Ingresa un monto válido');
+                return;
+            }
+            if (!address || !address.match(/^0x[a-fA-F0-9]{40}$/)) {
+                alert('Dirección BEP20 inválida. Debe comenzar con 0x y tener 42 caracteres');
+                return;
+            }
+            
+            document.getElementById('withdrawalAmountDisplay').textContent = `$${amount.toFixed(2)} USDT`;
+            document.getElementById('withdrawalAddressDisplay').textContent = address;
+            document.getElementById('withdrawalStep1').style.display = 'none';
+            document.getElementById('withdrawalStep2').style.display = 'block';
+        }
+
+        function withdrawalStep1Back() {
+            document.getElementById('withdrawalStep1').style.display = 'block';
+            document.getElementById('withdrawalStep2').style.display = 'none';
+        }
+
+        function withdrawalStep3() {
+            const amount = parseFloat(document.getElementById('withdrawalAmount').value);
+            document.getElementById('withdrawalSuccessAmount').textContent = `$${amount.toFixed(2)}`;
+            
+            document.getElementById('withdrawalStep2').style.display = 'none';
+            document.getElementById('withdrawalStep3').style.display = 'block';
+            
+            setTimeout(() => {
+                closeWithdrawalModal();
+            }, 2000);
+        }
+
+        function copyWallet(address) {
+            navigator.clipboard.writeText(address);
+            alert('Dirección copiada al portapapeles');
+        }
+
+        function copyReferralLink() {
+            const link = document.getElementById('referralLink').textContent;
+            navigator.clipboard.writeText(link);
+            alert('Enlace copiado al portapapeles');
+        }
+    </script>
+</body>
+</html>
